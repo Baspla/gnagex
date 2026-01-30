@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 make g++
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy dependencies first for caching
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml svelte.config.js ./
 RUN pnpm install --frozen-lockfile
 
 # Copy source and build
