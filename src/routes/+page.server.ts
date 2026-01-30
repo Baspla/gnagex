@@ -1,5 +1,5 @@
 import { requireAuth } from '$lib/server/guards';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from './dashboard/$types';
 
 export const load: PageServerLoad = async (event) => {
 	// Stellt sicher, dass der User authentifiziert ist
