@@ -1,5 +1,6 @@
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { relations } from 'drizzle-orm';
+import { check, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { relations, sql } from 'drizzle-orm';
+import { table } from 'console';
 
 export const user = sqliteTable('user', {
 	id: text('id')
@@ -23,7 +24,7 @@ export const user = sqliteTable('user', {
 
 export const userRelations = relations(user, ({ many }) => ({
 	portfolios: many(portfolio),
-	decidedPredictions: many(prediction)
+	decidedPredictionMarkets: many(predictionMarket)
 }));
 
 export const assetCategory = sqliteTable('asset_category', {
@@ -39,7 +40,8 @@ export const assetCategoryRelations = relations(assetCategory, ({ many }) => ({
 export const currency = sqliteTable('currency', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
-	symbol: text('symbol').notNull()
+	symbol: text('symbol').notNull(),
+	isRealWorld: integer('is_real_world', { mode: 'boolean' }).notNull().default(true)
 });
 
 export const currencyRelations = relations(currency, ({ many }) => ({
@@ -127,7 +129,7 @@ export const portfolioRelations = relations(portfolio, ({ one, many }) => ({
 	currencies: many(portfolioCurrency),
 	inventory: many(assetInventory),
 	transactions: many(transaction),
-	wagers: many(predictionWager)
+	predictionMarketShares: many(predictionMarketShare)
 }));
 
 export const portfolioCurrency = sqliteTable('portfolio_currency', {
@@ -195,7 +197,7 @@ export const transaction = sqliteTable('transaction', {
 		.references(() => portfolio.id, { onDelete: 'cascade' }),
 	assetId: text('asset_id').references(() => asset.id), // Nullable for non-asset transactions
 	type: text('type', {
-		enum: ['buy', 'sell', 'deposit', 'withdrawal', 'gift', 'fee', 'currency_conversion','prediction_cost','prediction_win','prediction_loss','prediction_reimbursement']
+		enum: ['buy', 'sell', 'deposit', 'withdrawal', 'gift', 'fee', 'currency_conversion', 'prediction_cost', 'prediction_win', 'prediction_loss', 'prediction_reimbursement']
 	}).notNull(),
 	amount: real('amount'), // Quantity of asset
 	pricePerUnit: real('price_per_unit'),
@@ -211,7 +213,7 @@ export const transaction = sqliteTable('transaction', {
 	executedAt: integer('executed_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
-	predictionWagerId: text('prediction_wager_id').references(() => predictionWager.id, { onDelete: 'set null' }),
+	predictionMarketShareId: text('prediction_market_share_id').references(() => predictionMarketShare.id, { onDelete: 'set null' }),
 	notes: text('notes')
 });
 
@@ -234,9 +236,9 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
 		references: [currency.id],
 		relationName: 'toCurrency'
 	}),
-	predictionWager: one(predictionWager, {
-		fields: [transaction.predictionWagerId],
-		references: [predictionWager.id]
+	predictionMarketShare: one(predictionMarketShare, {
+		fields: [transaction.predictionMarketShareId],
+		references: [predictionMarketShare.id]
 	})
 }));
 
@@ -284,7 +286,7 @@ export const exchangeRateHistoryRelations = relations(exchangeRateHistory, ({ on
 	})
 }));
 
-export const prediction = sqliteTable('prediction', {
+export const predictionMarket = sqliteTable('prediction_market', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -295,47 +297,60 @@ export const prediction = sqliteTable('prediction', {
 	result: text('result', {
 		enum: ['yes', 'no', 'null'] // null is for unresolved/push
 	}).default('null'),
-	
+	title: text('title').notNull(),
+
+	yesPool: real('yes_pool').notNull(),
+	noPool: real('no_pool').notNull(),
+
+	// This is the currency in which shares are bought/sold NOT of the tracked asset (if any)
+	currencyId: text('currency_id')
+		.notNull()
+		.references(() => currency.id),
+
 	// Text Prediction fields
 	text: text('text'),
 	deciderId: text('decider_id').references(() => user.id, { onDelete: 'set null' }),
-	
+
 	// Asset Prediction fields
 	assetId: text('asset_id').references(() => asset.id),
 	targetPrice: real('target_price'),
 	direction: text('direction', { enum: ['above', 'below'] }),
-	
+
 	endDate: integer('end_date', { mode: 'timestamp' }).notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.$defaultFn(() => new Date()),
 	updatedAt: integer('updated_at', { mode: 'timestamp' })
 		.$defaultFn(() => new Date())
 		.$onUpdate(() => new Date())
-});
+}, (table) => [
+	check('yesPoolPositive', sql`${table.yesPool} > 0`),
+	check('noPoolPositive', sql`${table.noPool} > 0`),
+]
+);
 
-export const predictionRelations = relations(prediction, ({ one, many }) => ({
+export const predictionMarketRelations = relations(predictionMarket, ({ one, many }) => ({
 	decider: one(user, {
-		fields: [prediction.deciderId],
+		fields: [predictionMarket.deciderId],
 		references: [user.id]
 	}),
 	asset: one(asset, {
-		fields: [prediction.assetId],
+		fields: [predictionMarket.assetId],
 		references: [asset.id]
 	}),
-	wagers: many(predictionWager),
+	shares: many(predictionMarketShare),
 	transactions: many(transaction)
 }));
 
-export const predictionWager = sqliteTable('prediction_wager', {
+export const predictionMarketShare = sqliteTable('prediction_market_share', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	portfolioId: text('portfolio_id')
 		.notNull()
 		.references(() => portfolio.id, { onDelete: 'cascade' }),
-	predictionId: text('prediction_id')
+	predictionMarketId: text('prediction_market_id')
 		.notNull()
-		.references(() => prediction.id),
+		.references(() => predictionMarket.id),
 	amount: real('amount').notNull(),
 	currencyId: text('currency_id') // Wager currency
 		.notNull()
@@ -343,19 +358,21 @@ export const predictionWager = sqliteTable('prediction_wager', {
 	choice: text('choice', { enum: ['yes', 'no'] }).notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.$defaultFn(() => new Date())
-});
+}, (table) => [
+	check('amountPositive', sql`${table.amount} > 0`),
+]);
 
-export const predictionWagerRelations = relations(predictionWager, ({ one }) => ({
+export const predictionMarketShareRelations = relations(predictionMarketShare, ({ one }) => ({
 	portfolio: one(portfolio, {
-		fields: [predictionWager.portfolioId],
+		fields: [predictionMarketShare.portfolioId],
 		references: [portfolio.id]
 	}),
-	prediction: one(prediction, {
-		fields: [predictionWager.predictionId],
-		references: [prediction.id]
+	predictionMarket: one(predictionMarket, {
+		fields: [predictionMarketShare.predictionMarketId],
+		references: [predictionMarket.id]
 	}),
 	currency: one(currency, {
-		fields: [predictionWager.currencyId],
+		fields: [predictionMarketShare.currencyId],
 		references: [currency.id]
 	})
 }));

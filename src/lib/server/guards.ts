@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
 /**
  * Ensures the user is authenticated via the reverse proxy headers.
@@ -59,4 +60,22 @@ export function requireAllGroups(
 	}
 
 	return user;
+}
+
+
+/**
+ * Checks if the user is an admin.
+ *
+ * @param event - SvelteKit request event
+ * @param redirectTo - URL to redirect unauthorized users
+ */
+export function requireAdmin(event: RequestEvent, redirectTo = '/auth/unauthorized') {
+    const adminGroup = env.ADMIN_GROUP || 'admin';
+    return requireGroups(event, [adminGroup], redirectTo);
+}
+
+
+export function isAdmin(user: { groups: string[] }): boolean {
+	const adminGroup = env.ADMIN_GROUP || 'admin';
+	return user.groups.includes(adminGroup);
 }

@@ -147,7 +147,7 @@
 					{#each themes as theme (theme.id)}
 						<button
 							type="button"
-							class="flex w-full items-center justify-between p-3 transition-colors hover:bg-surface-200-800 rounded-xl"
+							class="flex w-full items-center justify-between p-3 transition-colors hover:bg-surface-200-800 rounded-base"
 							class:preset-tonal-primary={currentTheme === theme.id}
 							onclick={() => setTheme(theme.id)}
 						>
@@ -160,7 +160,7 @@
 				</div>
 
 				<footer class="mt-6 flex shrink-0 justify-end">
-					<Dialog.CloseTrigger class="btn preset-filled">Done</Dialog.CloseTrigger>
+					<Dialog.CloseTrigger class="btn preset-filled rounded-base">Done</Dialog.CloseTrigger>
 				</footer>
 			</Dialog.Content>
 		</Dialog.Positioner>

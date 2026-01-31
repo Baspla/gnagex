@@ -55,8 +55,8 @@
 					<td class="p-2">
                         {#if transaction.asset}
                             {transaction.asset.symbol}
-                        {:else if transaction.predictionWager}
-							{transaction.predictionWager.predictionId}
+                        {:else if transaction.predictionMarketShare}
+							{transaction.predictionMarketShare.predictionMarketId}
 						{:else}
 							-
                         {/if}

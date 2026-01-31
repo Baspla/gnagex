@@ -13,6 +13,7 @@
 		PaletteIcon
 	} from '@lucide/svelte';
 	import { Navigation } from '@skeletonlabs/skeleton-svelte';
+	import type { LayoutProps } from './$types';
 
 	const links = [
 		{ label: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
@@ -23,7 +24,7 @@
 		{ label: 'Leaderboard', href: '/leaderboard', icon: CrownIcon }
 	];
 
-	let { children } = $props();
+	let { data, children }: LayoutProps = $props();
 	let innerWidth: number = $state(0);
 </script>
 
@@ -49,6 +50,12 @@
 							<Navigation.TriggerText>{link.label}</Navigation.TriggerText>
 						</Navigation.TriggerAnchor>
 					{/each}
+					{#if data.user?.isAdmin}
+						<Navigation.TriggerAnchor href="/admin">
+							<LayoutDashboardIcon class="size-5" />
+							<Navigation.TriggerText>Admin Dashboard</Navigation.TriggerText>
+						</Navigation.TriggerAnchor>
+					{/if}
 				</Navigation.Menu>
 			</Navigation.Content>
 			<Navigation.Footer class="flex flex-col items-center">

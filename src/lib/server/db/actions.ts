@@ -237,11 +237,14 @@ export const getUserTransactions = async (userId: string, page: number = 1, page
         limit: pageSize,
         offset: (page - 1) * pageSize,
         with: {
-            portfolio: true,
             asset: true,
             fromCurrency: true,
             toCurrency: true,
-            predictionWager: true
+            predictionMarketShare: {
+                with: {
+                    predictionMarket: true
+                }
+            }
         }
     });
 
@@ -277,27 +280,29 @@ export const getExchangeRateHistory = async (pairId: string, limit: number = 30)
 // --- Helper Functions ---
 
 /**
- * Ensures that EUR and USD currencies exist in the database.
+ * Ensures that EUR and USD as well as GCN exist in the currencies table.
  * If they don't exist, they are created.
  */
 export const ensureBaseCurrencies = async () => {
     // Try to find EUR and USD
     const existingCurrencies = await db.query.currency.findMany({
-        where: inArray(schema.currency.id, ['EUR', 'USD'])
+        where: inArray(schema.currency.id, ['EUR', 'USD', 'GCN'])
     });
 
     const currenciesMap = new Map(existingCurrencies.map(c => [c.id, c]));
 
     const results = {
         EUR: currenciesMap.get('EUR'),
-        USD: currenciesMap.get('USD')
+        USD: currenciesMap.get('USD'),
+        GCN: currenciesMap.get('GCN')
     }
 
     if (!results.EUR) {
         const [eur] = await createCurrency({
             id: 'EUR',
             name: 'Euro',
-            symbol: '€'
+            symbol: '€',
+            isRealWorld: true
         });
         results.EUR = eur;
     }
@@ -306,9 +311,20 @@ export const ensureBaseCurrencies = async () => {
         const [usd] = await createCurrency({
             id: 'USD',
             name: 'US Dollar',
-            symbol: '$'
+            symbol: '$',
+            isRealWorld: true
         });
         results.USD = usd;
+    }
+
+    if (!results.GCN) {
+        const [gcn] = await createCurrency({
+            id: 'GCN',
+            name: 'Gnag Coin',
+            symbol: '💸',
+            isRealWorld: false
+        });
+        results.GCN = gcn;
     }
 
     return results;

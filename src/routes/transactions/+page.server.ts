@@ -10,6 +10,7 @@ export const load: PageServerLoad = async (event) => {
 	const page = Number(event.url.searchParams.get('page')) || 1;
 	const pageSize = Number(event.url.searchParams.get('pageSize')) || 10;
 	
+	try{
 	const { transactions, totalCount } = await getUserTransactions(user.id, page, pageSize);
 
 	return {
@@ -26,4 +27,9 @@ export const load: PageServerLoad = async (event) => {
 		page,
 		pageSize
 	};
+	
+	} catch (error) {
+		console.error('Error fetching transactions:', error);
+		throw error;
+	}
 };
