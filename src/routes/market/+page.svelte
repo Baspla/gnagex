@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { Pagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeftIcon, ArrowRightIcon } from '@lucide/svelte';
+	import AssetIcon from '$lib/components/AssetIcon.svelte';
+	import SimpleChart from '$lib/components/SimpleChart.svelte';
 
 	let { data } = $props();
 
@@ -20,18 +22,32 @@
 	<table class="table w-full table-auto">
 		<thead>
 			<tr>
+				<th class="px-4 py-2 text-left">Logo</th>
 				<th class="px-4 py-2 text-left">Ticker</th>
 				<th class="px-4 py-2 text-left">Name</th>
+				<th class="px-4 py-2 text-left">Chart</th>
 				<th class="px-4 py-2 text-left">Category</th>
 			</tr>
 		</thead>
 		<tbody>
 			{#each data.assets as asset (asset.id)}
 				<tr class="hover:bg-surface-500/10">
+					<td class="px-4 py-2">
+						<AssetIcon asset={asset} class="size-6" shape="rounded" />
+					</td>
 					<td class="px-4 py-2 font-mono font-bold">
 						<a href={`/market/assets/${asset.id}`}>{asset.symbol} </a></td
 					>
-					<td class="px-4 py-2">{asset.name}</td>
+					<td class="px-4 py-2">
+							<a href={`/market/assets/${asset.id}`}>{asset.name}</a>
+					</td>
+					<td class="px-4 py-2">
+						<SimpleChart
+							data={asset.priceHistory}
+							height="50px"
+							currency={asset.currency}
+						/>
+					</td>
 					<td class="px-4 py-2 capitalize">{asset.category.name}</td>
 				</tr>
 			{/each}

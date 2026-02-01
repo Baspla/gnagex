@@ -77,13 +77,18 @@ export const getAssets = async () => {
     });
 };
 
-export const getAssetsPaginated = async (page: number = 1, pageSize: number = 10) => {
+export const getAssetsPaginated = async (page: number = 1, pageSize: number = 10,startingDateHistory?: Date) => {
     const offset = (page - 1) * pageSize;
     const [assets, totalResult] = await Promise.all([
         db.query.asset.findMany({
             with: {
                 category: true,
-                currency: true
+                currency: true,
+                priceHistory: {
+                    orderBy: [desc(schema.assetPriceHistory.date)],
+                    where: startingDateHistory ? gte(schema.assetPriceHistory.date, startingDateHistory) : undefined,
+                    limit: 200
+                }
             },
             limit: pageSize,
             offset: offset,

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import { goto } from '$app/navigation';
 	import { Pagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeftIcon, ArrowRightIcon } from '@lucide/svelte';
-  	import Chart from '$lib/components/Chart.svelte';
+  	import Chart from '$lib/components/CandleChart.svelte';
+	import AssetIcon from '$lib/components/AssetIcon.svelte';
 
 	let { data } = $props();
 
@@ -18,13 +18,13 @@
 {#if data.asset}
 	<div class="container mx-auto p-4">
 		<div class="mb-4 rounded-base p-4">
-			<img src="https://img.logo.dev/ticker/{data.asset.symbol}?token={env.PUBLIC_LOGO_DEV_TOKEN}" alt="{data.asset.name} logo" />
+			<AssetIcon asset={data.asset} />
 			<h2 class="mb-2 text-xl font-semibold">{data.asset.name} ({data.asset.symbol})</h2>
 			<p class="mb-1"><strong>Category:</strong> {data.asset.category.name}</p>
 			<p class="mb-1"><strong>Description:</strong> {data.asset.category.description}</p>
 		</div>
 		
-  		<Chart data={data.asset.priceHistory} />
+  		<Chart data={data.asset.priceHistory} currency={data.asset.currency} />
 		<h2 class="mt-6 mb-2 text-xl font-semibold">Related Transactions</h2>
 		<table class="table w-full table-auto">
 			<thead>
