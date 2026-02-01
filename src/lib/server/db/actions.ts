@@ -1,7 +1,7 @@
 import { eq, and, desc, asc, inArray, count, gte, lte, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { db } from './index';
 import * as schema from './schema';
-import { fetchQuoteCombined, fetchStockQuote } from '../yahoo/finance';
+import { fetchQuoteCombined, fetchStockQuote, fetchHistoricalData } from '../yahoo/finance';
 
 // --- Users ---
 export const getUsers = async () => {
@@ -156,6 +156,59 @@ export const deleteAssetPriceHistoryInRange = async (assetId: string, startDate:
                 lte(schema.assetPriceHistory.date, endDate)
             )
         );
+};
+
+export const updateAssetHistory = async (assetId: string, startDate?: string | Date, endDate?: string | Date) => {
+    const asset = await getAssetById(assetId);
+    if (!asset || !asset.symbol) {
+        throw new Error(`Asset not found or has no symbol: ${assetId}`);
+    }
+
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date(end);
+    if (!startDate) {
+        start.setFullYear(start.getFullYear() - 1);
+    }
+
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
+    
+    // Safety check if start > end ?
+    if (start > end) {
+        throw new Error("Start date cannot be after end date");
+    }
+
+    console.log(`Fetching history for ${asset.symbol} from ${startStr} to ${endStr}`);
+    
+    try {
+        const data = await fetchHistoricalData(asset.symbol, startStr, endStr);
+
+        if (data.length > 0) {
+            const dates = data.map(d => new Date(d.date).getTime());
+            const minDate = new Date(Math.min(...dates));
+            const maxDate = new Date(Math.max(...dates));
+
+            await deleteAssetPriceHistoryInRange(asset.id, minDate, maxDate);
+            
+            const historyRecords = data.map(item => ({
+                assetId: asset.id,
+                date: new Date(item.date),
+                open: item.open,
+                high: item.high,
+                low: item.low,
+                close: item.close,
+                volume: item.volume
+            }));
+
+            await bulkAddAssetPriceHistory(historyRecords);
+            return { success: true, count: data.length, symbol: asset.symbol };
+        }
+        return { success: true, count: 0, symbol: asset.symbol };
+
+    } catch (e: any) {
+        console.error(`Failed to update history for ${asset.symbol}:`, e);
+        throw new Error(`Failed to fetch data: ${e.message}`);
+    }
 };
 
 // --- Portfolios ---

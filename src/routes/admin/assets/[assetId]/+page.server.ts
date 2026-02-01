@@ -1,6 +1,5 @@
-import { getAssetById, getUserAssetTransactions, bulkAddAssetPriceHistory, deleteAssetPriceHistoryInRange } from "$lib/server/db/actions";
+import { getAssetById, getUserAssetTransactions, updateAssetHistory } from "$lib/server/db/actions";
 import { requireAuth } from "$lib/server/guards";
-import { fetchHistoricalData } from "$lib/server/yahoo/finance";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -34,42 +33,13 @@ export const actions: Actions = {
         
         // @ts-ignore
         const assetId = params.assetId;
-        const asset = await getAssetById(assetId);
-
-        if (!asset || !asset.symbol) {
-             return { success: false, error: "Asset has no symbol" };
-        }
 
         try {
-            const data = await fetchHistoricalData(asset.symbol, startDate, endDate);
-            console.log(`Fetched ${data.length} historical records for ${asset.symbol} from ${startDate} to ${endDate}`);
-
-            if (data.length > 0) {
-                const dates = data.map(d => new Date(d.date).getTime());
-                const minDate = new Date(Math.min(...dates));
-                const maxDate = new Date(Math.max(...dates));
-
-                await deleteAssetPriceHistoryInRange(asset.id, minDate, maxDate);
-                console.log(`Deleted existing price history for asset ${asset.symbol} between ${minDate.toISOString()} and ${maxDate.toISOString()}`);
-
-                const historyRecords = data.map(item => ({
-                    assetId: asset.id,
-                    date: new Date(item.date),
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                    volume: item.volume
-                }));
-
-                await bulkAddAssetPriceHistory(historyRecords);
-                console.log(`Inserted ${historyRecords.length} new price history records for asset ${asset.symbol}`);
-            }
-
-             return { success: true, count: data.length };
-        } catch (e) {
+            const result = await updateAssetHistory(assetId, startDate, endDate);
+            return { success: true, count: result.count };
+        } catch (e: any) {
             console.error(e);
-             return { success: false, error: "Failed to fetch data" };
+             return { success: false, error: e.message || "Failed to fetch data" };
         }
     }
 };

@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { createAsset, getCurrencies, getAssetCategories, getAssetsPaginated } from '$lib/server/db/actions';
-import { fetchStockQuote } from '$lib/server/yahoo/finance';
+import { fetchHistoricalData, fetchStockQuote } from '$lib/server/yahoo/finance';
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions: Actions = {
