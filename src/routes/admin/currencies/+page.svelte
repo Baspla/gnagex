@@ -4,7 +4,6 @@
 
 <div class="container mx-auto p-4">
 	<h1 class="text-2xl font-bold mb-4">Admin Dashboard</h1>
-    <a href="/admin/testing" class="px-4 py-2 preset-filled transition rounded-base">
-        Go to Testing Page
-    </a>
+	<p>Welcome, {page.data.user?.displayName}!</p>
+	<p>You have access to this protected admin area.</p>
 </div>

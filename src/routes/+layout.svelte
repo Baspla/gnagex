@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.png';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import {
 		ChartNoAxesCombined,
@@ -10,9 +10,10 @@
 		TrendingUpDownIcon,
 		TicketsIcon,
 		HistoryIcon,
-		PaletteIcon
+		PaletteIcon,
+		HammerIcon,
 	} from '@lucide/svelte';
-	import { Navigation } from '@skeletonlabs/skeleton-svelte';
+	import { Menu, Navigation, Portal } from '@skeletonlabs/skeleton-svelte';
 	import type { LayoutProps } from './$types';
 
 	const links = [
@@ -35,7 +36,7 @@
 <svelte:window bind:innerWidth />
 <div class="flex {innerWidth < 768 ? 'flex-col' : 'flex-row'} h-screen w-screen overflow-hidden">
 	{#if innerWidth >= 768}
-		<Navigation layout={'rail'} class="backdrop-blur-lg">
+		<Navigation layout={'rail'} class="overflow-y-auto backdrop-blur-lg">
 			<Navigation.Header>
 				<Navigation.TriggerAnchor href="/" title="Gnag Exchange" aria-label="View Homepage">
 					<ChartNoAxesCombined class="size-8" />
@@ -51,9 +52,53 @@
 						</Navigation.TriggerAnchor>
 					{/each}
 					{#if data.user?.isAdmin}
-						<Navigation.TriggerAnchor href="/admin">
-							<LayoutDashboardIcon class="size-5" />
-							<Navigation.TriggerText>Admin Dashboard</Navigation.TriggerText>
+						<Navigation.TriggerAnchor>
+							<Menu positioning={{ placement: 'right-start', strategy: 'absolute' }}>
+								<Menu.Trigger class="flex flex-col items-center gap-3">
+									<HammerIcon class="size-5" />
+									<Navigation.TriggerText>Admin</Navigation.TriggerText>
+								</Menu.Trigger>
+								<Portal>
+									<Menu.Positioner>
+										<Menu.Content>
+											<Menu.Item value="admin-overview">
+												<a href="/admin" class="flex w-full h-full">
+												<Menu.ItemText>Overview</Menu.ItemText></a>
+											</Menu.Item>
+											<Menu.Separator />
+											<Menu.Item value="user-management" >
+												<a href="/admin/users" class="flex w-full h-full">
+												<Menu.ItemText>Users</Menu.ItemText></a>
+											</Menu.Item>
+											<Menu.Item value="asset-management">
+												<a href="/admin/assets" class="flex w-full h-full">
+												<Menu.ItemText>Assets</Menu.ItemText>
+												</a>
+											</Menu.Item>
+											<Menu.Item value="prediction-management">
+												<a href="/admin/predictions" class="flex w-full h-full">
+												<Menu.ItemText>Predictions</Menu.ItemText>
+												</a>
+											</Menu.Item>
+											<Menu.Item value="portfolio-management">
+												<a href="/admin/portfolios" class="flex w-full h-full">
+												<Menu.ItemText>Portfolios</Menu.ItemText>
+												</a>
+											</Menu.Item>
+											<Menu.Item value="currency-management">
+												<a href="/admin/currencies" class="flex w-full h-full">
+												<Menu.ItemText>Currencies</Menu.ItemText>
+												</a>
+											</Menu.Item>
+											<Menu.Item value="exchange-rate-management">
+												<a href="/admin/exchange-rates" class="flex w-full h-full">
+												<Menu.ItemText>Exchange Rates</Menu.ItemText>
+												</a>
+											</Menu.Item>
+										</Menu.Content>
+									</Menu.Positioner>
+								</Portal>
+							</Menu>
 						</Navigation.TriggerAnchor>
 					{/if}
 				</Navigation.Menu>

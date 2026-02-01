@@ -1,6 +1,7 @@
-import { eq, and, desc, asc, inArray, count, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray, count, gte, lte, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { db } from './index';
 import * as schema from './schema';
+import { fetchStockQuote } from '../yahoo/finance';
 
 // --- Users ---
 export const getUsers = async () => {
@@ -76,6 +77,27 @@ export const getAssets = async () => {
     });
 };
 
+export const getAssetsPaginated = async (page: number = 1, pageSize: number = 10) => {
+    const offset = (page - 1) * pageSize;
+    const [assets, totalResult] = await Promise.all([
+        db.query.asset.findMany({
+            with: {
+                category: true,
+                currency: true
+            },
+            limit: pageSize,
+            offset: offset,
+            orderBy: [desc(schema.asset.createdAt)]
+        }),
+        db.select({ count: count() }).from(schema.asset)
+    ]);
+    
+    return {
+        assets,
+        totalCount: totalResult[0]?.count ?? 0
+    };
+};
+
 export const getAssetById = async (id: string) => {
     return await db.query.asset.findFirst({
         where: eq(schema.asset.id, id),
@@ -84,7 +106,7 @@ export const getAssetById = async (id: string) => {
             currency: true,
             priceHistory: {
                 orderBy: [desc(schema.assetPriceHistory.date)],
-                limit: 1
+                limit: 500
             }
         }
     });
@@ -107,12 +129,28 @@ export const addAssetPriceHistory = async (data: InferInsertModel<typeof schema.
     return await db.insert(schema.assetPriceHistory).values(data).returning();
 };
 
+export const bulkAddAssetPriceHistory = async (data: InferInsertModel<typeof schema.assetPriceHistory>[]) => {
+    if (data.length === 0) return [];
+    return await db.insert(schema.assetPriceHistory).values(data).returning();
+};
+
 export const getAssetPriceHistory = async (assetId: string, limit: number = 30) => {
     return await db.query.assetPriceHistory.findMany({
         where: eq(schema.assetPriceHistory.assetId, assetId),
         orderBy: [desc(schema.assetPriceHistory.date)],
         limit
     });
+};
+
+export const deleteAssetPriceHistoryInRange = async (assetId: string, startDate: Date, endDate: Date) => {
+    return await db.delete(schema.assetPriceHistory)
+        .where(
+            and(
+                eq(schema.assetPriceHistory.assetId, assetId),
+                gte(schema.assetPriceHistory.date, startDate),
+                lte(schema.assetPriceHistory.date, endDate)
+            )
+        );
 };
 
 // --- Portfolios ---
@@ -251,6 +289,40 @@ export const getUserTransactions = async (userId: string, page: number = 1, page
     return { transactions, totalCount: total.count };
 };
 
+export const getUserAssetTransactions = async (userId: string, assetId: string, page: number = 1, pageSize: number = 10) => {
+    const portfolios = await db.query.portfolio.findMany({
+        where: eq(schema.portfolio.userId, userId),
+        columns: { id: true }
+    });
+    const portfolioIds = portfolios.map(p => p.id);
+
+    if (portfolioIds.length === 0) return { transactions: [], totalCount: 0 };
+    const whereClause = and(
+        inArray(schema.transaction.portfolioId, portfolioIds),
+        eq(schema.transaction.assetId, assetId)
+    );
+    const [total] = await db.select({ count: count() })
+        .from(schema.transaction)
+        .where(whereClause);
+    const transactions = await db.query.transaction.findMany({
+        where: whereClause,
+        orderBy: [desc(schema.transaction.executedAt)],
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        with: {
+            asset: true,
+            fromCurrency: true,
+            toCurrency: true,
+            predictionMarketShare: {
+                with: {
+                    predictionMarket: true
+                }
+            }
+        }
+    });
+    return { transactions, totalCount: total.count };
+};
+
 // --- Exchange Pairs & Rates ---
 export const getExchangePairs = async () => {
     return await db.query.exchangePair.findMany({
@@ -380,3 +452,76 @@ export const ensureUserPortfolio = async (userId: string) => {
     });
 };
 
+export const ensureAssetCategories = async () => {
+    const categories = [
+        { id: 'equity', name: 'Equity' },
+        { id: 'etf', name: 'ETF' },
+        { id: 'future', name: 'Future' }
+    ];
+    for (const category of categories) {
+        const existing = await db.query.assetCategory.findFirst({
+            where: eq(schema.assetCategory.id, category.id)
+        });
+        if (!existing) {
+            await createAssetCategory(category);
+            console.log(`Created asset category: ${category.name}`);
+        }
+    }
+};
+
+export const ensureCurrencyConversions = async () => {
+    const pairs = [
+        { fromCurrencyId: 'EUR', toCurrencyId: 'USD' , symbol: 'EURUSD=X' },
+        { fromCurrencyId: 'USD', toCurrencyId: 'EUR' , symbol: 'USDEUR=X' },
+        { fromCurrencyId: 'EUR', toCurrencyId: 'GCN' , symbol: 'EURGCN', staticConversionRate: 1 },
+        { fromCurrencyId: 'GCN', toCurrencyId: 'EUR' , symbol: 'GNCEUR', staticConversionRate: 1 },
+    ];
+    for (const pair of pairs) {
+        const existing = await db.query.exchangePair.findFirst({
+            where: and(
+                eq(schema.exchangePair.fromCurrencyId, pair.fromCurrencyId),
+                eq(schema.exchangePair.toCurrencyId, pair.toCurrencyId)
+            )
+        });
+        if (!existing) {
+            await createExchangePair(pair);
+            console.log(`Created exchange pair: ${pair.fromCurrencyId} to ${pair.toCurrencyId}`);
+        }
+    }
+};
+
+export const updateMarketData = async () => {
+    const assets = await getAssets();
+    for (const asset of assets) {
+        if (asset.symbol) {
+            fetchStockQuote(asset.symbol).then(async (quote) => {
+                if (quote && quote.regularMarketPrice) {
+                    const quoteDate = quote.regularMarketTime ? new Date(quote.regularMarketTime) : new Date();
+
+                    const existing = await db.query.assetPriceHistory.findFirst({
+                        where: and(
+                            eq(schema.assetPriceHistory.assetId, asset.id),
+                            eq(schema.assetPriceHistory.date, quoteDate)
+                        )
+                    });
+
+                    if (!existing) {
+                        // Add new price history entry
+                        addAssetPriceHistory({
+                            assetId: asset.id,
+                            date: quoteDate,
+                            open: quote.regularMarketOpen ?? undefined,
+                            high: quote.regularMarketDayHigh ?? undefined,
+                            low: quote.regularMarketDayLow ?? undefined,
+                            close: quote.regularMarketPrice,
+                            volume: quote.regularMarketVolume ?? undefined
+                        });
+                        console.log(`Updated market price for asset ${asset.symbol} to ${quote.regularMarketPrice} at ${quoteDate.toISOString()} (${quote.regularMarketTime})`);
+                    }
+                }
+            }).catch((err) => {
+                console.error(`Error fetching market data for asset ${asset.symbol}:`, err);
+            });
+        }
+    }
+}

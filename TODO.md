@@ -34,8 +34,8 @@ Neuer Zustand:
  - Nein Pool y: 110 Shares
  - Konstante k: 10.000 (k = x * y)
  - Liquidität L: 100 Punkte (L^2 = x * y)
- - Preis Ja Share: 0,452 Punkte (90,91 / (90,91 + 110))
- - Preis Nein Share: 0,547 Punkte (110 / (90,91 + 110))
+ - Preis Ja Share:  0,547  Punkte (x / (x + y))
+ - Preis Nein Share: 0,452 Punkte (y / (x + y))
  - Nutzer hat jetzt 19,09 Ja Shares für 10 Punkte gekauft die bei Ja zu 19,09 Punkten ausgezahlt werden oder bei Nein wertlos verfallen.
 
 Die Stichworte hier sind "Conditional Token Framework" und "CPMM - Constant Product Market Maker"

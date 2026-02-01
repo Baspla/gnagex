@@ -1,0 +1,20 @@
+import { getAssetsPaginated } from '$lib/server/db/actions';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async (event) => {
+	const page = Number(event.url.searchParams.get('page')) || 1;
+	const pageSize = Number(event.url.searchParams.get('pageSize')) || 10;
+    
+    // Validate
+    const safePage = Math.max(1, page);
+    const safePageSize = Math.max(1, Math.min(100, pageSize));
+
+    const { assets, totalCount } = await getAssetsPaginated(safePage, safePageSize);
+    
+    return { 
+        assets,
+        totalCount,
+        page: safePage,
+        pageSize: safePageSize
+    };
+}

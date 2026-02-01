@@ -8,7 +8,7 @@ import { building } from '$app/environment';
 const client = new Database(building ? ':memory:' : (env.DATABASE_URL ?? 'local.db'));
 client.pragma('foreign_keys = ON');
 
-export const db = drizzle(client, { schema, logger: true });
+export const db = drizzle(client, { schema, logger: false });
 
 if (!building) {
 	migrate(db, { migrationsFolder: 'drizzle' });

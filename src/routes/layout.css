@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@source '../node_modules/layerchart/dist';
 
 @import '@skeletonlabs/skeleton'; 
 @import '@skeletonlabs/skeleton-svelte'; 
@@ -10,7 +11,7 @@
 @import '@skeletonlabs/skeleton/themes/nosh';
 @import '@skeletonlabs/skeleton/themes/nouveau';
 @import '@skeletonlabs/skeleton/themes/rose';
-@import '@skeletonlabs/skeleton/themes/terminus'; 
+@import '@skeletonlabs/skeleton/themes/terminus';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

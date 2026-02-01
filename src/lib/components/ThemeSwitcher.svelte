@@ -1,11 +1,10 @@
 <script lang="ts">
 	import {
-		XIcon,
 		MoonIcon,
 		SunIcon,
 		MonitorIcon
 	} from '@lucide/svelte';
-	import { Dialog, Portal, SegmentedControl } from '@skeletonlabs/skeleton-svelte';
+	import { Menu, Portal, SegmentedControl } from '@skeletonlabs/skeleton-svelte';
 	import { onMount } from 'svelte';
 
 	const HREF_BONUS = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
@@ -89,34 +88,36 @@
 
 	let { children } = $props();
 
-	const animation =
-		'transition transition-discrete opacity-0 translate-y-[20px] starting:data-[state=open]:opacity-0 starting:data-[state=open]:translate-y-[20px] data-[state=open]:opacity-100 data-[state=open]:translate-y-0';
-</script>
+	</script>
 
-<Dialog>
-	<Dialog.Trigger>
+<Menu positioning={{ placement: 'right-end', strategy: 'absolute' }}>
+	<Menu.Trigger>
 		{@render children()}
-	</Dialog.Trigger>
+	</Menu.Trigger>
 
 	<Portal>
-		<Dialog.Backdrop class="fixed inset-0 z-50 bg-surface-950/50 backdrop-blur-sm" />
-
-		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content
-				class="flex max-h-[85vh] w-full max-w-sm flex-col card bg-surface-100-900 p-6 shadow-xl {animation}"
-			>
-				<header class="mb-4 flex shrink-0 items-center justify-between">
-					<Dialog.Title class="text-2xl font-bold">Themes</Dialog.Title>
-					<Dialog.CloseTrigger class="btn-icon hover:preset-tonal">
-						<XIcon class="size-5" />
-					</Dialog.CloseTrigger>
-				</header>
-
-				<div class="mb-4 flex w-full">
+		<Menu.Positioner>
+			<Menu.Content class="w-64 p-4 rounded-container">
+				<div class="space-y-2 overflow-y-auto pr-4">
+					{#each themes as theme (theme.id)}
+						<button
+							type="button"
+							class="flex w-full items-center justify-between p-3 transition-colors preset-tonal rounded-base"
+							class:preset-tonal-primary={currentTheme === theme.id}
+							onclick={() => setTheme(theme.id)}
+						>
+							<span class="flex items-center gap-3 text-lg">
+								<span>{theme.icon}</span>
+								<span>{theme.name}</span>
+							</span>
+						</button>
+					{/each}
+				</div>
+				<div class="mt-4 flex w-full">
 					<SegmentedControl
 						defaultValue="start"
 						value={mode}
-						class="w-full"
+						class="w-full rounded-container"
 						onValueChange={(details) => setMode(details.value as 'light' | 'dark' | 'system')}
 					>
 						<SegmentedControl.Control>
@@ -143,26 +144,7 @@
 					</SegmentedControl>
 				</div>
 
-				<div class="space-y-2 overflow-y-auto pr-4">
-					{#each themes as theme (theme.id)}
-						<button
-							type="button"
-							class="flex w-full items-center justify-between p-3 transition-colors hover:bg-surface-200-800 rounded-base"
-							class:preset-tonal-primary={currentTheme === theme.id}
-							onclick={() => setTheme(theme.id)}
-						>
-							<span class="flex items-center gap-3 text-lg">
-								<span>{theme.icon}</span>
-								<span>{theme.name}</span>
-							</span>
-						</button>
-					{/each}
-				</div>
-
-				<footer class="mt-6 flex shrink-0 justify-end">
-					<Dialog.CloseTrigger class="btn preset-filled rounded-base">Done</Dialog.CloseTrigger>
-				</footer>
-			</Dialog.Content>
-		</Dialog.Positioner>
+			</Menu.Content>
+		</Menu.Positioner>
 	</Portal>
-</Dialog>
+</Menu>

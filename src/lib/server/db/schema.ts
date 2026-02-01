@@ -1,6 +1,5 @@
 import { check, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { relations, sql } from 'drizzle-orm';
-import { table } from 'console';
 
 export const user = sqliteTable('user', {
 	id: text('id')
@@ -28,7 +27,7 @@ export const userRelations = relations(user, ({ many }) => ({
 }));
 
 export const assetCategory = sqliteTable('asset_category', {
-	id: text('id').primaryKey(), // 'stock', 'etf', 'commodity'
+	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	description: text('description')
 });
@@ -197,7 +196,7 @@ export const transaction = sqliteTable('transaction', {
 		.references(() => portfolio.id, { onDelete: 'cascade' }),
 	assetId: text('asset_id').references(() => asset.id), // Nullable for non-asset transactions
 	type: text('type', {
-		enum: ['buy', 'sell', 'deposit', 'withdrawal', 'gift', 'fee', 'currency_conversion', 'prediction_cost', 'prediction_win', 'prediction_loss', 'prediction_reimbursement']
+		enum: ['buy', 'sell', 'deposit', 'withdrawal','sent','received', 'gift', 'fee', 'currency_conversion', 'prediction_cost', 'prediction_win', 'prediction_loss', 'prediction_reimbursement']
 	}).notNull(),
 	amount: real('amount'), // Quantity of asset
 	pricePerUnit: real('price_per_unit'),
@@ -253,6 +252,7 @@ export const exchangePair = sqliteTable('exchange_pair', {
 		.notNull()
 		.references(() => currency.id),
 	symbol: text('symbol').unique().notNull(), // e.g. "EUR/USD" or "EURUSD"
+	staticConversionRate: real('static_conversion_rate'),
 	name: text('name')
 });
 
