@@ -44,7 +44,6 @@
 				formatter: (params: any) => {
 					const param = Array.isArray(params) ? params[0] : params;
 					if (!param || !param.data) return '';
-					// data: [open, close, low, high]
 					const [index, open, close, low, high] = param.data;
 					return `
 						${param.axisValue}<br/>

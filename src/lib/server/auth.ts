@@ -157,7 +157,9 @@ export const proxyAuthHandle: Handle = async ({ event, resolve }) => {
 		const groups = groupsHeader ? groupsHeader.split(',').map((g) => g.trim()) : [];
 		if (accessToken && userInfoEndpoint && !avatarUrl) {
 			avatarUrl = await getPictureFromOidc(accessToken, userInfoEndpoint);
-		}
+		} else if (!avatarUrl) {
+			console.warn('No avatar URL available for user', email);
+			console.warn(event.request.headers)
 
 		const [dbUser] = await upsertUser({
 			externalId: userId,
