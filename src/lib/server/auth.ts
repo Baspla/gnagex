@@ -160,6 +160,7 @@ export const proxyAuthHandle: Handle = async ({ event, resolve }) => {
 		} else if (!avatarUrl) {
 			console.warn('No avatar URL available for user', email);
 			console.warn(event.request.headers)
+		}
 
 		const [dbUser] = await upsertUser({
 			externalId: userId,
