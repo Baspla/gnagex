@@ -39,7 +39,7 @@ export const assetCategoryRelations = relations(assetCategory, ({ many }) => ({
 export const currency = sqliteTable('currency', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
-	symbol: text('symbol').notNull(),
+	symbol: text('symbol').notNull().unique(),
 	isRealWorld: integer('is_real_world', { mode: 'boolean' }).notNull().default(true)
 });
 
@@ -56,7 +56,7 @@ export const asset = sqliteTable('asset', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	symbol: text('symbol').notNull(),
+	symbol: text('symbol').notNull().unique(),
 	name: text('name').notNull(),
 	categoryId: text('category_id')
 		.notNull()

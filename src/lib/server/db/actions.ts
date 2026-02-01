@@ -113,13 +113,6 @@ export const getAssetById = async (id: string) => {
 };
 
 export const createAsset = async (data: InferInsertModel<typeof schema.asset>) => {
-    // If an asset with the same symbol exists, we skip creating a new one
-    const existingAsset = await db.query.asset.findFirst({
-        where: eq(schema.asset.symbol, data.symbol)
-    });
-    if (existingAsset) {
-        return existingAsset;
-    }
     return await db.insert(schema.asset).values(data).returning();
 };
 
