@@ -139,7 +139,7 @@ export const proxyAuthHandle: Handle = async ({ event, resolve }) => {
 	let username = event.request.headers.get('x-auth-request-preferred-username');
 	let groupsHeader = event.request.headers.get('x-auth-request-groups');
 	let avatarUrl: string | null = null;
-	const accessToken = event.request.headers.get('x-auth-request-access-token');
+	const accessToken = event.request.headers.get('x-access-token');
 	const userInfoEndpoint = event.request.headers.get('x-auth-request-userinfo-endpoint');
 
 	// In dev mode with DEBUG_AUTH=true, use debug user if no proxy headers present
