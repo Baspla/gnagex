@@ -38,6 +38,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@auth/drizzle-adapter": "^1.11.1",
 		"@auth/sveltekit": "^1.11.1",
 		"@lucide/svelte": "^0.563.1",
 		"apexcharts": "^5.3.6",

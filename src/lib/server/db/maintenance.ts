@@ -60,13 +60,13 @@ export const consolidateAssetHistory = async (olderThanDays: number) => {
             const consolidatedDate = new Date(`${day}T00:00:00.000Z`);
 
             // 4. Transaction: Delete old records and insert new one
-            await db.transaction(async (tx) => {
+            db.transaction((tx) => {
                 const idsToDelete = records.map(r => r.id);
                 // Chunk deletions if too many (SQLite limit), though unlikely for one day of minute data (1440 rows)
-                await tx.delete(assetPriceHistory)
-                    .where(inArray(assetPriceHistory.id, idsToDelete));
+                tx.delete(assetPriceHistory)
+                    .where(inArray(assetPriceHistory.id, idsToDelete)).run();
                 
-                await tx.insert(assetPriceHistory).values({
+                tx.insert(assetPriceHistory).values({
                     assetId: asset.id,
                     date: consolidatedDate,
                     open,
@@ -74,7 +74,7 @@ export const consolidateAssetHistory = async (olderThanDays: number) => {
                     low,
                     close,
                     volume
-                });
+                }).run();
             });
 
             totalConsolidated += records.length;
@@ -126,16 +126,16 @@ export const consolidateExchangeRateHistory = async (olderThanDays: number) => {
             const lastRecord = records[records.length - 1];
             const date = new Date(`${day}T00:00:00.000Z`);
 
-            await db.transaction(async (tx) => {
+            db.transaction((tx) => {
                 const idsToDelete = records.map(r => r.id);
-                await tx.delete(exchangeRateHistory)
-                    .where(inArray(exchangeRateHistory.id, idsToDelete));
+                tx.delete(exchangeRateHistory)
+                    .where(inArray(exchangeRateHistory.id, idsToDelete)).run();
                 
-                await tx.insert(exchangeRateHistory).values({
+                tx.insert(exchangeRateHistory).values({
                     pairId: pair.id,
                     date: date,
                     rate: lastRecord.rate
-                });
+                }).run();
             });
 
             totalConsolidated += records.length;
