@@ -1,11 +1,14 @@
-import { requireAuth } from '$lib/server/guards';
 import { getUserTransactions } from '$lib/server/db/actions';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	// Stellt sicher, dass der User authentifiziert ist
 	// Wirft einen Redirect, wenn keine Auth-Header vorhanden sind
-	const user = requireAuth(event);
+	const user = event.locals.user;
+	if (!user) {
+		throw error(401, 'Unauthorized');
+	}
 
 	const page = Number(event.url.searchParams.get('page')) || 1;
 	const pageSize = Number(event.url.searchParams.get('pageSize')) || 10;
@@ -14,22 +17,15 @@ export const load: PageServerLoad = async (event) => {
 	const { transactions, totalCount } = await getUserTransactions(user.id, page, pageSize);
 
 	return {
-		user: {
-			id: user.id,
-			email: user.email,
-			username: user.username,
-			displayName: user.displayName,
-			groups: user.groups,
-			avatarUrl: user.avatarUrl,
-		},
+		user,
 		transactions,
 		totalCount,
 		page,
 		pageSize
 	};
 	
-	} catch (error) {
-		console.error('Error fetching transactions:', error);
-		throw error;
+	} catch (err) {
+		console.error('Error fetching transactions:', err);
+		throw err;
 	}
 };

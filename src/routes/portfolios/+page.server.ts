@@ -1,19 +1,19 @@
-import { requireAuth } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	// Stellt sicher, dass der User authentifiziert ist
-	// Wirft einen Redirect, wenn keine Auth-Header vorhanden sind
-	const user = requireAuth(event);
+
+	const user = event.locals.user;
+	if (!user) {
+		throw new Response('Unauthorized', { status: 401 });
+	}
 
 	return {
 		user: {
 			id: user.id,
 			email: user.email,
-			username: user.username,
-			displayName: user.displayName,
-			groups: user.groups,
-			avatarUrl: user.avatarUrl,
+			name: user.name,
+			groups: typeof user.groups === 'string' ? JSON.parse(user.groups) : (user.groups || []),
+			image: user.image,
 		},
 		portfolio: {
 			stocks: [

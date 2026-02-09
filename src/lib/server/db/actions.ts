@@ -14,27 +14,6 @@ export const getUserById = async (id: string) => {
     return await db.query.user.findFirst({ where: eq(schema.user.id, id) });
 };
 
-export const upsertUser = async (data: InferInsertModel<typeof schema.user>) => {
-    // We cannot change email here if it is unique?
-    // externalId is unique. email is unique.
-    // Ideally we target externalId.
-    return await db.insert(schema.user)
-        .values(data)
-        .onConflictDoUpdate({
-            target: schema.user.externalId,
-            set: {
-                email: data.email,
-                username: data.username,
-                displayName: data.displayName,
-                avatarUrl: data.avatarUrl,
-                groups: data.groups,
-                active: data.active,
-                updatedAt: new Date()
-            }
-        })
-        .returning();
-};
-
 // --- Asset Categories ---
 export const getAssetCategories = async () => {
     return await db.query.assetCategory.findMany();

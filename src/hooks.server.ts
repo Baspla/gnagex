@@ -1,20 +1,19 @@
-import { sequence } from '@sveltejs/kit/hooks';
 import cron from 'node-cron';
-import { handle as authHandle, proxyAuthHandle } from '$lib/server/auth';
+import { auth } from "$lib/auth";
+import { svelteKitHandler } from "better-auth/svelte-kit";
+
 import { building } from '$app/environment';
 import { assertBaseCurrencies, assertAssetCategories, assertCurrencyConversions } from '$lib/server/db/actions';
 import { updateMarketData } from '$lib/server/finance/financeUtils';
-// Combine Auth.js handle with proxy auth middleware
-export const handle = sequence(authHandle, proxyAuthHandle);
 
 if (!building) {
-  assertBaseCurrencies().catch((err) => {
+  await assertBaseCurrencies().catch((err) => {
     console.error('Error asserting base currencies:', err);
   });
-  assertAssetCategories().catch((err) => {
+  await assertAssetCategories().catch((err) => {
     console.error('Error asserting asset categories:', err);
   });
-  assertCurrencyConversions().catch((err) => {
+  await assertCurrencyConversions().catch((err) => {
     console.error('Error asserting currency conversions:', err);
   });
   cron.schedule('*/15 * * * *', async () => {
@@ -29,4 +28,17 @@ if (!building) {
     // Add any daily maintenance tasks here
     // Clean up old data, optimize DB, etc.
   });
+}
+
+export async function handle({ event, resolve }) {
+const session = await auth.api.getSession({
+headers: event.request.headers,
+});
+
+if (session) {
+event.locals.session = session.session;
+event.locals.user = session.user;
+}
+
+return svelteKitHandler({ event, resolve, auth, building });
 }

@@ -12,21 +12,34 @@
 		HistoryIcon,
 		PaletteIcon,
 		HammerIcon,
+
+		LogOutIcon
+
 	} from '@lucide/svelte';
 	import { Menu, Navigation, Portal } from '@skeletonlabs/skeleton-svelte';
 	import type { LayoutProps } from './$types';
-
-	const links = [
-		{ label: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
-		{ label: 'Market', href: '/market', icon: TrendingUpDownIcon },
-		{ label: 'Predictions', href: '/predictions', icon: TicketsIcon },
-		{ label: 'Portfolios', href: '/portfolios', icon: BriefcaseBusinessIcon },
-		{ label: 'Transactions', href: '/transactions', icon: HistoryIcon },
-		{ label: 'Leaderboard', href: '/leaderboard', icon: CrownIcon }
-	];
+	import LoginButton from '$lib/components/auth/LoginButton.svelte';
+	import { page } from '$app/state';
+	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
 
 	let { data, children }: LayoutProps = $props();
+
+
+	const links =
+		data.session && data.user
+			? [
+					{ label: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
+					{ label: 'Market', href: '/market', icon: TrendingUpDownIcon },
+					{ label: 'Predictions', href: '/predictions', icon: TicketsIcon },
+					{ label: 'Portfolios', href: '/portfolios', icon: BriefcaseBusinessIcon },
+					{ label: 'Transactions', href: '/transactions', icon: HistoryIcon },
+					{ label: 'Leaderboard', href: '/leaderboard', icon: CrownIcon }
+				]
+			: [];
+
 	let innerWidth: number = $state(0);
+
+	const url = page.url;
 </script>
 
 <svelte:head
@@ -62,37 +75,39 @@
 									<Menu.Positioner>
 										<Menu.Content>
 											<Menu.Item value="admin-overview">
-												<a href="/admin" class="flex w-full h-full">
-												<Menu.ItemText>Overview</Menu.ItemText></a>
+												<a href="/admin" class="flex h-full w-full">
+													<Menu.ItemText>Overview</Menu.ItemText></a
+												>
 											</Menu.Item>
 											<Menu.Separator />
-											<Menu.Item value="user-management" >
-												<a href="/admin/users" class="flex w-full h-full">
-												<Menu.ItemText>Users</Menu.ItemText></a>
+											<Menu.Item value="user-management">
+												<a href="/admin/users" class="flex h-full w-full">
+													<Menu.ItemText>Users</Menu.ItemText></a
+												>
 											</Menu.Item>
 											<Menu.Item value="asset-management">
-												<a href="/admin/assets" class="flex w-full h-full">
-												<Menu.ItemText>Assets</Menu.ItemText>
+												<a href="/admin/assets" class="flex h-full w-full">
+													<Menu.ItemText>Assets</Menu.ItemText>
 												</a>
 											</Menu.Item>
 											<Menu.Item value="prediction-management">
-												<a href="/admin/predictions" class="flex w-full h-full">
-												<Menu.ItemText>Predictions</Menu.ItemText>
+												<a href="/admin/predictions" class="flex h-full w-full">
+													<Menu.ItemText>Predictions</Menu.ItemText>
 												</a>
 											</Menu.Item>
 											<Menu.Item value="portfolio-management">
-												<a href="/admin/portfolios" class="flex w-full h-full">
-												<Menu.ItemText>Portfolios</Menu.ItemText>
+												<a href="/admin/portfolios" class="flex h-full w-full">
+													<Menu.ItemText>Portfolios</Menu.ItemText>
 												</a>
 											</Menu.Item>
 											<Menu.Item value="currency-management">
-												<a href="/admin/currencies" class="flex w-full h-full">
-												<Menu.ItemText>Currencies</Menu.ItemText>
+												<a href="/admin/currencies" class="flex h-full w-full">
+													<Menu.ItemText>Currencies</Menu.ItemText>
 												</a>
 											</Menu.Item>
 											<Menu.Item value="exchange-rate-management">
-												<a href="/admin/exchange-rates" class="flex w-full h-full">
-												<Menu.ItemText>Exchange Rates</Menu.ItemText>
+												<a href="/admin/exchange-rates" class="flex h-full w-full">
+													<Menu.ItemText>Exchange Rates</Menu.ItemText>
 												</a>
 											</Menu.Item>
 										</Menu.Content>
@@ -110,14 +125,32 @@
 						<Navigation.TriggerText>Themes</Navigation.TriggerText>
 					</Navigation.TriggerAnchor>
 				</ThemeSwitcher>
+				<LogoutButton callbackURL={url.pathname} >
+					<Navigation.TriggerAnchor>
+						<LogOutIcon class="size-5" />
+						<Navigation.TriggerText>Logout</Navigation.TriggerText>
+					</Navigation.TriggerAnchor>
+				</LogoutButton>
 			</Navigation.Footer>
 		</Navigation>
 		<div class="flex h-full w-full overflow-auto p-6">
-			{@render children()}
+			{#if data.session && data.user}
+				{@render children()}
+			{:else}
+				<div class="flex h-full w-full flex-col items-center justify-center gap-4">
+					<LoginButton callbackURL={url.pathname} />
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<div class="flex h-full w-full overflow-auto p-6">
-			{@render children()}
+			{#if data.session && data.user}
+				{@render children()}
+			{:else}
+				<div class="flex h-full w-full flex-col items-center justify-center gap-4">
+					<LoginButton callbackURL={url.pathname} />
+				</div>
+			{/if}
 		</div>
 		<Navigation layout={'bar'} class="overflow-y-hidden backdrop-blur-lg">
 			<Navigation.Content>
@@ -135,6 +168,12 @@
 							<Navigation.TriggerText>Themes</Navigation.TriggerText>
 						</Navigation.TriggerAnchor>
 					</ThemeSwitcher>
+					<LogoutButton callbackURL={url.pathname} >
+						<Navigation.TriggerAnchor>
+							<LogOutIcon class="size-5" />
+							<Navigation.TriggerText>Logout</Navigation.TriggerText>
+						</Navigation.TriggerAnchor>
+					</LogoutButton>
 				</Navigation.Menu>
 			</Navigation.Content>
 		</Navigation>

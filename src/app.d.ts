@@ -4,16 +4,10 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user?: {
-				id: string;
-				externalId: string | null;
-				email: string;
-				username: string | null;
-				displayName: string | null;
-				avatarUrl: string | null;
-				groups: string[];
-				active: boolean | null;
-			};
+			session: import("better-auth/types").Session | null;
+			user: import("better-auth/types").User & {
+				groups?: string;
+			} | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

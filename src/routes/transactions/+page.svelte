@@ -1,5 +1,4 @@
 <script lang="ts">
-	import WorkInProgress from '$lib/components/WorkInProgress.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { Pagination } from '@skeletonlabs/skeleton-svelte';
@@ -61,7 +60,7 @@
 							-
                         {/if}
                     </td>
-					<td class="p-2 text-right">{transaction.amount ?? '-'}</td>
+					<td class="p-2 text-right">{transaction.totalValue ?? '-'}</td>
 					<td class="p-2 text-right">
                         {#if transaction.pricePerUnit}
                             {transaction.pricePerUnit.toFixed(2)} {transaction.toCurrency?.symbol}

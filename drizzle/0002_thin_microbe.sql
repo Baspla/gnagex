@@ -1,1 +1,0 @@
-ALTER TABLE `exchange_pair` ADD `static_conversion_rate` real;

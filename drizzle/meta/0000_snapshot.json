@@ -1,9 +1,133 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6baad1a0-a70b-4e2f-96b3-00b5c038e53c",
+  "id": "28d6425a-7f69-49b4-9cd2-94f299ccac30",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "account": {
+      "name": "account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "account_userId_idx": {
+          "name": "account_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "asset": {
       "name": "asset",
       "columns": {
@@ -57,7 +181,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "asset_symbol_unique": {
+          "name": "asset_symbol_unique",
+          "columns": [
+            "symbol"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "asset_category_id_asset_category_id_fk": {
           "name": "asset_category_id_asset_category_id_fk",
@@ -259,7 +391,7 @@
           "name": "close",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "volume": {
@@ -323,7 +455,15 @@
           "default": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "currency_symbol_unique": {
+          "name": "currency_symbol_unique",
+          "columns": [
+            "symbol"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -358,6 +498,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "static_conversion_rate": {
+          "name": "static_conversion_rate",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "name": {
@@ -593,8 +740,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "predictionMarket": {
-      "name": "predictionMarket",
+    "prediction_market": {
+      "name": "prediction_market",
       "columns": {
         "id": {
           "name": "id",
@@ -713,9 +860,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "predictionMarket_currency_id_currency_id_fk": {
-          "name": "predictionMarket_currency_id_currency_id_fk",
-          "tableFrom": "predictionMarket",
+        "prediction_market_currency_id_currency_id_fk": {
+          "name": "prediction_market_currency_id_currency_id_fk",
+          "tableFrom": "prediction_market",
           "tableTo": "currency",
           "columnsFrom": [
             "currency_id"
@@ -726,9 +873,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "predictionMarket_decider_id_user_id_fk": {
-          "name": "predictionMarket_decider_id_user_id_fk",
-          "tableFrom": "predictionMarket",
+        "prediction_market_decider_id_user_id_fk": {
+          "name": "prediction_market_decider_id_user_id_fk",
+          "tableFrom": "prediction_market",
           "tableTo": "user",
           "columnsFrom": [
             "decider_id"
@@ -739,9 +886,9 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "predictionMarket_asset_id_asset_id_fk": {
-          "name": "predictionMarket_asset_id_asset_id_fk",
-          "tableFrom": "predictionMarket",
+        "prediction_market_asset_id_asset_id_fk": {
+          "name": "prediction_market_asset_id_asset_id_fk",
+          "tableFrom": "prediction_market",
           "tableTo": "asset",
           "columnsFrom": [
             "asset_id"
@@ -758,13 +905,79 @@
       "checkConstraints": {
         "yesPoolPositive": {
           "name": "yesPoolPositive",
-          "value": "\"predictionMarket\".\"yes_pool\" > 0"
+          "value": "\"prediction_market\".\"yes_pool\" > 0"
         },
         "noPoolPositive": {
           "name": "noPoolPositive",
-          "value": "\"predictionMarket\".\"no_pool\" > 0"
+          "value": "\"prediction_market\".\"no_pool\" > 0"
         }
       }
+    },
+    "prediction_market_history": {
+      "name": "prediction_market_history",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prediction_market_id": {
+          "name": "prediction_market_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "yes_pool": {
+          "name": "yes_pool",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "no_pool": {
+          "name": "no_pool",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "probability": {
+          "name": "probability",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prediction_market_history_prediction_market_id_prediction_market_id_fk": {
+          "name": "prediction_market_history_prediction_market_id_prediction_market_id_fk",
+          "tableFrom": "prediction_market_history",
+          "tableTo": "prediction_market",
+          "columnsFrom": [
+            "prediction_market_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "prediction_market_share": {
       "name": "prediction_market_share",
@@ -834,10 +1047,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "prediction_market_share_prediction_market_id_predictionMarket_id_fk": {
-          "name": "prediction_market_share_prediction_market_id_predictionMarket_id_fk",
+        "prediction_market_share_prediction_market_id_prediction_market_id_fk": {
+          "name": "prediction_market_share_prediction_market_id_prediction_market_id_fk",
           "tableFrom": "prediction_market_share",
-          "tableTo": "predictionMarket",
+          "tableTo": "prediction_market",
           "columnsFrom": [
             "prediction_market_id"
           ],
@@ -870,6 +1083,102 @@
         }
       }
     },
+    "session": {
+      "name": "session",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        },
+        "session_userId_idx": {
+          "name": "session_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "transaction": {
       "name": "transaction",
       "columns": {
@@ -901,8 +1210,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "amount": {
-          "name": "amount",
+        "amount_of_units": {
+          "name": "amount_of_units",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
@@ -1055,11 +1364,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "external_id": {
-          "name": "external_id",
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "email": {
@@ -1069,12 +1378,36 @@
           "notNull": true,
           "autoincrement": false
         },
-        "username": {
-          "name": "username",
+        "email_verified": {
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "image": {
+          "name": "image",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
         },
         "display_name": {
           "name": "display_name",
@@ -1083,35 +1416,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "avatar_url": {
-          "name": "avatar_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "given_name": {
-          "name": "given_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "family_name": {
-          "name": "family_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "active": {
-          "name": "active",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": true
-        },
         "groups": {
           "name": "groups",
           "type": "text",
@@ -1119,43 +1423,77 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'[]'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {
-        "user_external_id_unique": {
-          "name": "user_external_id_unique",
-          "columns": [
-            "external_id"
-          ],
-          "isUnique": true
-        },
         "user_email_unique": {
           "name": "user_email_unique",
           "columns": [
             "email"
           ],
           "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verification": {
+      "name": "verification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
         },
-        "user_username_unique": {
-          "name": "user_username_unique",
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "verification_identifier_idx": {
+          "name": "verification_identifier_idx",
           "columns": [
-            "username"
+            "identifier"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {},
