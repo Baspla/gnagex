@@ -4,7 +4,7 @@ import { db } from "$lib/server/db";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { genericOAuth } from "better-auth/plugins";
 import { getRequestEvent } from "$app/server";
-import { env } from '$env/dynamic/private';
+import { env } from "$env/dynamic/private";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
