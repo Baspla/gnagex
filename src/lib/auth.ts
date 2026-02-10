@@ -5,6 +5,7 @@ import { sveltekitCookies } from "better-auth/svelte-kit";
 import { genericOAuth } from "better-auth/plugins";
 import { getRequestEvent } from "$app/server";
 import { env } from "$env/dynamic/private";
+import { createUserPortfolio } from "./server/db/actions";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -16,6 +17,22 @@ export const auth = betterAuth({
 				type: "string",
 				default: "[]",
 			},
+		}
+	},
+	databaseHooks:{
+		user: {
+			create: {
+				after: async (user) => {
+					console.log("New user created:", user);
+					// Setup new Portfolio or other initial data here
+					createUserPortfolio(user.id).then(() => {
+						console.log("Portfolio created for user:", user.id);
+					}).catch(err => {
+						console.error("Error creating portfolio for user:", user.id, err);
+					});
+					
+				}
+			}
 		}
 	},
 	plugins: [

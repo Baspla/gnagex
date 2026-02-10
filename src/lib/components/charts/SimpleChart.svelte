@@ -1,5 +1,6 @@
 <script lang="ts">
-	import BaseChart, { formatCurrency } from './BaseChart.svelte';
+	import { formatCurrency } from '$lib/currency';
+	import BaseChart from './BaseChart.svelte';
 
 	interface Props {
 		data: {

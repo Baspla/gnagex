@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Pagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeftIcon, ArrowRightIcon } from '@lucide/svelte';
+	import { formatCurrency } from '$lib/currency.js';
 
 	let { data } = $props();
 
@@ -30,17 +31,17 @@
 	}
 </script>
 
-<div class="relative">
-	<h1 class="mb-4 text-2xl font-bold">Transactions</h1>
+<div class="relative container mx-auto p-4">
+	<h1 class="mb-4 text-3xl font-bold">Transactions</h1>
 	<table class="table table-auto">
 		<thead>
 			<tr>
 				<th class="p-2 text-left">Date</th>
 				<th class="p-2 text-left">Type</th>
-				<th class="p-2 text-left">Asset/Prediction</th>
-				<th class="p-2 text-right">Amount</th>
-				<th class="p-2 text-right">Price per Unit</th>
 				<th class="p-2 text-right">Total Value</th>
+				<th class="p-2 text-left">Asset/Prediction</th>
+				<th class="p-2 text-right">Unit Amount</th>
+				<th class="p-2 text-right">Price per Unit</th>
 				<th class="p-2 text-right">Notes</th>
 			</tr>
 		</thead>
@@ -51,6 +52,13 @@
 					<td class="p-2 {getTransactionTypeColor(transaction.type)}"
 						>{transaction.type.toUpperCase()}</td
 					>
+					<td class="p-2 text-right">
+                        {#if transaction.totalValue}
+                            {formatCurrency(transaction.totalValue, transaction.toCurrency)}
+                        {:else}
+                            -
+                        {/if}
+                    </td>
 					<td class="p-2">
                         {#if transaction.asset}
                             {transaction.asset.symbol}
@@ -60,17 +68,10 @@
 							-
                         {/if}
                     </td>
-					<td class="p-2 text-right">{transaction.totalValue ?? '-'}</td>
+					<td class="p-2 text-right">{transaction.amountOfUnits ?? '-'}</td>
 					<td class="p-2 text-right">
                         {#if transaction.pricePerUnit}
-                            {transaction.pricePerUnit.toFixed(2)} {transaction.toCurrency?.symbol}
-                        {:else}
-                            -
-                        {/if}
-                    </td>
-					<td class="p-2 text-right">
-                        {#if transaction.totalValue}
-                            {transaction.totalValue.toFixed(2)} {transaction.toCurrency?.symbol}
+                            {formatCurrency(transaction.pricePerUnit, transaction.toCurrency)}
                         {:else}
                             -
                         {/if}

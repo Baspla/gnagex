@@ -5,6 +5,7 @@
 	import { ArrowLeftIcon, ArrowRightIcon } from '@lucide/svelte';
 	import AssetIcon from '$lib/components/AssetIcon.svelte';
 	import SimpleChart from '$lib/components/charts/SimpleChart.svelte';
+	import WorkInProgress from '$lib/components/WorkInProgress.svelte';
 
 	let { data } = $props();
 
@@ -16,9 +17,7 @@
 </script>
 
 <div class="container mx-auto p-4">
-	<h1 class="mb-6 text-2xl font-bold">Market</h1>
-
-	<h2 class="mt-6 mb-2 text-xl font-semibold">Assets</h2>
+	<h1 class="mb-6 text-3xl font-bold">Market</h1>
 	<table class="table w-full table-auto">
 		<thead>
 			<tr>
@@ -82,4 +81,5 @@
 			</Pagination.NextTrigger>
 		</Pagination>
 	</div>
+	<WorkInProgress />
 </div>

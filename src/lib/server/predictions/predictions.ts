@@ -31,6 +31,46 @@ export async function createManualPredictionMarket(title: string, text: string, 
     });
 }
 
+export async function createAssetPredictionMarket(title: string | null, assetId: string, targetPrice: number, direction: 'above' | 'below', endDate: Date, poolSize: number, currencyId: string) {
+    return await db.transaction(async (tx) => {
+        const marketId = crypto.randomUUID()
+        // If no title is provided, generate one
+        let marketTitle = title;
+        if (!marketTitle) {
+            const assetData = await tx.query.asset.findFirst({
+                where: eq(schema.asset.id, assetId)
+            });
+            if (assetData) {
+                marketTitle = `Will ${assetData.name} be ${direction} ${targetPrice} by ${endDate.toLocaleDateString()}?`;
+            } else {
+                marketTitle = `Asset Prediction: ${direction} ${targetPrice}`;
+            }
+        }
+
+        await tx.insert(schema.predictionMarket).values({
+            id: marketId,
+            type: 'price_target',
+            title: marketTitle,
+            assetId,
+            targetPrice,
+            direction,
+            endDate,
+            yesPool: poolSize / 2,
+            noPool: poolSize / 2,
+            currencyId
+        })
+        await tx.insert(schema.predictionMarketHistory).values({
+            id: crypto.randomUUID(),
+            predictionMarketId: marketId,
+            yesPool: poolSize / 2,
+            noPool: poolSize / 2,
+            date: new Date(),
+            probability: getProbabilityForMarket(poolSize / 2, poolSize / 2, 'yes')
+        })
+        return marketId
+    });
+}
+
 export async function buyPredictionMarketShares(marketId: string, portfolioId: string, amount: number, side: 'yes' | 'no') {
     // We need to assert that the market exists, is still open, and that the user has enough balance in the specified currency to buy the shares. Then we calculate how many shares the user gets for their money based on the current pool sizes, update the pools, and create a transaction record for the purchase. Finally, we add a new history entry with the updated pools and probability.
     return await db.transaction(async (tx) => {

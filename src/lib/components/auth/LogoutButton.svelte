@@ -8,6 +8,7 @@
 		await authClient.signOut();
 		location.reload();
 	}}
+	class="w-full"
 >
 	{@render children()}</button
 >

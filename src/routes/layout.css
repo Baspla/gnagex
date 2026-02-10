@@ -53,3 +53,12 @@ html {
 .hide-scrollbar-track {
   scrollbar-color:var(--color-surface-300-700)#0000
 }
+
+/* Fix for firefox select white-on-white issue - https://github.com/skeletonlabs/skeleton/issues/3993 */
+.select,
+.input,
+.textarea,
+.input-group {
+	background-color: var(--color-surface-50-950);
+	color: var(--color-surface-950-50);
+}

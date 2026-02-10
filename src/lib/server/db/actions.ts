@@ -473,40 +473,46 @@ export const assertBaseCurrencies = async () => {
  * Creates a portfolio for a user if they don't have one,
  * and credits a starting gift of 100,000 EUR.
  */
-export const assertUserPortfolio = async (userId: string) => {
-
-    const existingPortfolio = await db.query.portfolio.findFirst({
-        where: eq(schema.portfolio.userId, userId)
-    });
-
-    if (existingPortfolio) {
-        return existingPortfolio;
-    }
+export const createUserPortfolio = async (userId: string, name='Main Portfolio') => {
 
     // Transaction
     return await db.transaction(async (tx) => {
         // 1. Create Portfolio
         const [newPortfolio] = await tx.insert(schema.portfolio).values({
             userId,
-            name: 'Main Portfolio'
+            name
         }).returning();
 
         if (!newPortfolio) throw new Error("Failed to create portfolio");
 
-        // 2. Add 100,000 EUR entry to portfolio_currency
+        const currencies = await getCurrencies();
+        const eurCurrency = currencies.find(c => c.id === 'EUR');
+        if (!eurCurrency) throw new Error("EUR currency not found");
+
+        // 2. Add 0 Amounts for all currencies
+        for (const currency of currencies) {
+            if (currency.id === 'EUR') continue;
+            await tx.insert(schema.portfolioCurrency).values({
+                portfolioId: newPortfolio.id,
+                currencyId: currency.id,
+                amount: 0
+            });
+        }
+
+        // 3. Add 100,000 EUR entry to portfolio_currency
         await tx.insert(schema.portfolioCurrency).values({
             portfolioId: newPortfolio.id,
-            currencyId: 'EUR',
+            currencyId: eurCurrency.id,
             amount: 100000
         });
 
-        // 3. Record the transaction (Gift)
+        // 4. Record the transaction (Gift)
         await tx.insert(schema.transaction).values({
             portfolioId: newPortfolio.id,
             type: 'gift',
             totalValue: 100000,
-            fromCurrencyId: 'EUR',
-            toCurrencyId: 'EUR',
+            fromCurrencyId: eurCurrency.id,
+            toCurrencyId: eurCurrency.id,
             executedAt: new Date(),
             notes: 'Starting capital'
         });

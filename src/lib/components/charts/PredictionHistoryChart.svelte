@@ -19,13 +19,23 @@
 			trigger: 'axis',
 			formatter: (params: any) => {
 				const date = new Date(params[0].value[0]);
-				const prob = params[0].value[1];
-				return `${date.toLocaleString()}<br/>Probability (Yes): ${(prob * 100).toFixed(2)}%`;
+				let result = `${date.toLocaleString()}<br/>`;
+				params.forEach((p: any) => {
+					result += `${p.marker} ${p.seriesName}: ${(p.value[1] * 100).toFixed(2)}%<br/>`;
+				});
+				return result;
+			}
+		},
+		legend: {
+			data: ['Yes', 'No'],
+			top: 0,
+			textStyle: {
+				color: 'inherit'
 			}
 		},
 		xAxis: {
 			type: 'time',
-			boundaryGap: false
+			boundaryGap: ['20%', '20%']
 		},
 		yAxis: {
 			type: 'value',
@@ -37,20 +47,34 @@
 		},
 		series: [
 			{
+				name: 'Yes',
 				data: history.map((h) => [h.date, h.probability]),
 				type: 'line',
 				smooth: true,
 				areaStyle: {
-					opacity: 0.3
+					opacity: 0.1
 				},
 				itemStyle: {
-					color: '#2563eb' // Blue-600
+					color: '#22c55e' // Green-500
+				},
+				showSymbol: false
+			},
+			{
+				name: 'No',
+				data: history.map((h) => [h.date, 1 - h.probability]),
+				type: 'line',
+				smooth: true,
+				areaStyle: {
+					opacity: 0.1
+				},
+				itemStyle: {
+					color: '#ef4444' // Red-500
 				},
 				showSymbol: false
 			}
 		],
 		grid: {
-			top: 20,
+			top: 30,
 			bottom: 20,
 			left: 50,
 			right: 20
@@ -59,6 +83,6 @@
 </script>
 
 <div class="">
-	<h3 class="">Probability History (Yes)</h3>
+	<h3 class="">Probability History</h3>
 	<BaseChart {options} {height} />
 </div>

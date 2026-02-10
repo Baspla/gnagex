@@ -55,6 +55,7 @@ The user will manually generate and run any migrations, do not do that yourself.
 ### 6. UI & Styling (Skeleton UI + Tailwind)
 - Use Skeleton UI design tokens with Tailwind classes.
 - **Reference**: See `.github/instructions/skeletonui.instructions.md` for full component documentation.
+- **Icons**: Use `@lucide/svelte` for icons.
 - **Themeing**: Use design tokens for colors, spacing, etc., instead of hardcoded values since we have a dynamic theming system.
 - **Design Tokens**:
   - **Properties**: `accent`, `bg`, `border`, `caret`, `decoration`, `divide`, `fill`, `outline`, `ring`, `shadow`, `stroke`, `text`.

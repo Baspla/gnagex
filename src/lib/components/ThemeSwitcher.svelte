@@ -93,7 +93,7 @@
 	</script>
 
 <Menu positioning={{ placement: 'right-end', strategy: 'absolute' }}>
-	<Menu.Trigger>
+	<Menu.Trigger class="w-full">
 		{@render children()}
 	</Menu.Trigger>
 
