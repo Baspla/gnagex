@@ -49,11 +49,11 @@ export const consolidateAssetHistory = async (olderThanDays: number) => {
             const first = records[0];
             const last = records[records.length - 1];
 
-            const open = first.open ?? first.close; // Fallback if open missing
-            const close = last.close;
+            const open = first.open ?? first.close ?? 0;
+            const close = last.close ?? last.open ?? 0;
             // Calculate High/Low/Volume
-            const high = Math.max(...records.map(r => r.high ?? r.close));
-            const low = Math.min(...records.map(r => r.low ?? r.close));
+            const high = Math.max(...records.map(r => r.high ?? r.close ?? 0));
+            const low = Math.min(...records.map(r => r.low ?? r.close ?? 0));
             const volume = records.reduce((sum, r) => sum + (r.volume ?? 0), 0);
             
             // Use the start of the day as the timestamp for the consolidated record
