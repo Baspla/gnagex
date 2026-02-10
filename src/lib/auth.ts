@@ -47,3 +47,7 @@ export const auth = betterAuth({
 	],
 	baseURL: env.BETTER_AUTH_URL || "http://localhost:5173"
 });
+
+if (!env.BETTER_AUTH_URL) {
+	console.warn("BETTER_AUTH_URL is not set, defaulting to http://localhost:5173. Make sure to set this in production!");
+}

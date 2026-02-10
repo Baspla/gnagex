@@ -7,3 +7,7 @@ export const authClient = createAuthClient({
 	],
 	baseURL: import.meta.env.BETTER_AUTH_URL || "http://localhost:5173"
 });
+
+if (!import.meta.env.BETTER_AUTH_URL) {
+	console.warn("BETTER_AUTH_URL is not set in the client, defaulting to http://localhost:5173. Make sure to set this in production!");
+}
