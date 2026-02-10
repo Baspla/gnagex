@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Gnag Exchange - Error {page.status}</title>
+	<title>Crew Capital - Error {page.status}</title>
 </svelte:head>
 
 <div class="flex h-full w-full flex-col items-center justify-center space-y-4">

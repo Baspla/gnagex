@@ -37,7 +37,7 @@
 
 <svelte:head
 	><link rel="icon" href={favicon} />
-	<title>Gnag Exchange</title>
+	<title>Crew Capital</title>
 </svelte:head>
 <svelte:window bind:innerWidth />
 
@@ -45,7 +45,7 @@
 		{#if innerWidth >= 768}
 			<Navigation layout={'rail'} class="overflow-y-auto backdrop-blur-lg">
 				<Navigation.Header>
-					<Navigation.TriggerAnchor href="/" title="Gnag Exchange" aria-label="View Homepage">
+					<Navigation.TriggerAnchor href="/" title="Crew Capital" aria-label="View Homepage">
 						<ChartNoAxesCombined class="size-8" />
 					</Navigation.TriggerAnchor>
 				</Navigation.Header>

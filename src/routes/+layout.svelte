@@ -7,7 +7,7 @@ let { children } = $props();
 
 <svelte:head>
 <link rel='icon' href={favicon} />
-<title>Gnag Exchange</title>
+<title>Crew Capital</title>
 </svelte:head>
 
 <Toaster>
